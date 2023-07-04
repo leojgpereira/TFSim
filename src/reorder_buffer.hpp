@@ -2,6 +2,7 @@
 #include "interfaces.hpp"
 #include "branch_predictor.hpp"
 #include "bpb.hpp"
+#include "cpb.hpp"
 #include <nana/gui/widgets/listbox.hpp>
 #include<vector>
 #include<deque>
@@ -40,6 +41,7 @@ public:
     bool rob_is_empty();
     branch_predictor get_preditor();
     bpb get_bpb();
+    cpb get_cpb();
     int get_mem_count();
 
 private:
@@ -76,10 +78,11 @@ private:
     deque<rob_slot *> rob_buff;
     sc_event free_rob_event,new_rob_head_event,rob_head_value_event,resv_read_oper_event;
     // flag to mode
-    // 1-> 1 preditor; 2-> bpb
+    // 1-> 1 preditor; 2-> bpb; 3->cpb
     int flag_mode;
     branch_predictor preditor;
     bpb branch_prediction_buffer;
+    cpb correlating_branch_predictor;
     map<string,unsigned int> branch_instr;
     nana::listbox &gui_table;
     nana::listbox::cat_proxy instr_queue_gui;

@@ -84,6 +84,7 @@ int sc_main(int argc, char *argv[])
     //menu::item_proxy spec_ip = 
     op.append("Especulação");
     auto spec_sub = op.create_sub_menu(0);
+    
     // Modo com 1 preditor para todos os branchs
     spec_sub->append("1 Preditor", [&](menu::item_proxy &ip)
     {
@@ -91,6 +92,7 @@ int sc_main(int argc, char *argv[])
             spec = true;
             mode = 1;
             spec_sub->checked(1, false);
+            spec_sub->checked(2, false);
         }
         else{
             spec = false;
@@ -99,6 +101,7 @@ int sc_main(int argc, char *argv[])
 
         set_spec(plc,spec);
     });
+
     // Modo com o bpb
     spec_sub->append("Branch Prediction Buffer", [&](menu::item_proxy &ip)
     {
@@ -106,6 +109,7 @@ int sc_main(int argc, char *argv[])
             spec = true;
             mode = 2;
             spec_sub->checked(0, false);
+            spec_sub->checked(2, false);
         }
         else{
             spec = false;
@@ -114,8 +118,27 @@ int sc_main(int argc, char *argv[])
 
         set_spec(plc, spec);
     });
+
+    // Modo com o cbp
+    spec_sub->append("Correlating Branch Prediction", [&](menu::item_proxy &ip)
+    {
+        if(ip.checked()){
+            spec = true;
+            mode = 3;
+            spec_sub->checked(0, false);
+            spec_sub->checked(1, false);
+        }
+        else{
+            spec = false;
+            mode = 0;
+        }
+
+        set_spec(plc, spec);
+    });
+
     spec_sub->check_style(0,menu::checks::highlight);
     spec_sub->check_style(1,menu::checks::highlight);
+    spec_sub->check_style(2,menu::checks::highlight);
 
     op.append("Modificar valores...");
     // novo submenu para escolha do tamanho do bpb e do preditor
@@ -887,6 +910,8 @@ int sc_main(int argc, char *argv[])
                     top1.rob_mode(n_bits,nadd,nmul,nls,instruct_time,instruction_queue,table,memory,reg,instruct,clock_count,rob);
                 else if(mode == 2)
                     top1.rob_mode_bpb(n_bits, bpb_size, nadd,nmul,nls,instruct_time,instruction_queue,table,memory,reg,instruct,clock_count,rob);
+                else
+                    top1.rob_mode_cpb(n_bits, bpb_size, nadd,nmul,nls,instruct_time,instruction_queue,table,memory,reg,instruct,clock_count,rob);
             }
             else
                 top1.simple_mode(nadd,nmul,nls,instruct_time,instruction_queue,table,memory,reg,instruct,clock_count);

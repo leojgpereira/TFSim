@@ -7,9 +7,10 @@ tam(sz),
 flag_mode(flag_mode),
 preditor(pred_size),
 branch_prediction_buffer(buffer_size, pred_size),
+correlating_branch_predictor(buffer_size, pred_size),
 gui_table(gui),
 instr_queue_gui(instr_gui)
-{
+{   
     last_rob = 0;
     branch_instr = {{"BEQ",0},{"BNE",1},{"BGTZ",2},{"BLTZ",3},{"BGEZ",4},{"BLEZ",5}};
     ptrs = new rob_slot*[tam];
@@ -171,8 +172,14 @@ void reorder_buffer::leitura_issue()
             if(flag_mode == 1){
                 ptrs[pos]->prediction = preditor.predict();
             }
-            else{
+            else if (flag_mode == 2){
                 ptrs[pos]->prediction = branch_prediction_buffer.bpb_predict(ptrs[pos]->pc);
+            }
+            else{
+                cout << "Predict" << endl;
+                ptrs[pos]->prediction = correlating_branch_predictor.cpb_predict(ptrs[pos]->pc);
+                cout << "Predicted" << endl;
+                
             }
             
             if(ptrs[pos]->prediction){
@@ -267,8 +274,10 @@ void reorder_buffer::new_rob_head()
                 cout << "Atualizando bpb" << endl << flush;
                 if(flag_mode == 1){
                     preditor.update_state(pred, hit);
-                }else{
+                }else if(flag_mode == 2){
                     branch_prediction_buffer.bpb_update_state(rob_buff[0]->pc, pred, hit);
+                } else {
+                    correlating_branch_predictor.cpb_update(rob_buff[0]->pc, pred, hit);
                 }
                 break;
 
@@ -572,6 +581,10 @@ branch_predictor reorder_buffer::get_preditor() {
 
 bpb reorder_buffer::get_bpb() {
     return branch_prediction_buffer;
+}
+
+cpb reorder_buffer::get_cpb() {
+    return correlating_branch_predictor;
 }
 
 int reorder_buffer::get_mem_count(){
